@@ -101,7 +101,7 @@ function App() {
           </p>{" "}
           <br></br>
           <h3 className="text-2xl font-bold text-gray-800">
-            Book a Driver going your way, below!
+            Book a Driver going your way!
           </h3>
         </section>
 
@@ -133,6 +133,7 @@ function App() {
                 className={`w-full mt-2 p-2 border rounded ${
                   pickupError ? "border-red-500" : "border-gray-300"
                 }`}
+                aria-label="Pickup Location"
               />
               {pickupError && (
                 <p className="text-red-500 text-sm mt-1">{pickupError}</p>
@@ -162,6 +163,7 @@ function App() {
                 className={`w-full mt-2 p-2 border rounded ${
                   destinationError ? "border-red-500" : "border-gray-300"
                 }`}
+                aria-label="Destination"
               />
               {destinationError && (
                 <p className="text-red-500 text-sm mt-1">{destinationError}</p>
@@ -223,6 +225,7 @@ function App() {
                 !pickup.trim() ||
                 !destination.trim()
               }
+              aria-label="Book Ride"
             >
               {loading ? "Submitting..." : "Book Ride"}
             </button>
@@ -240,7 +243,7 @@ function App() {
           )}
 
           {successMessage && (
-            <p className="text-green-700 text-center font-medium mt-4">
+            <p className="text-green-700 text-center font-medium mt-4" aria-live="assertive">
               {successMessage}
             </p>
           )}
