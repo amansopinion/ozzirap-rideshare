@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Modal from "./Modal";
 
 function App() {
   const [pickup, setPickup] = useState("");
@@ -8,6 +9,7 @@ function App() {
   const [destinationError, setDestinationError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     setRideType("single");
@@ -53,7 +55,12 @@ function App() {
       setDestination("");
       setRideType("single");
       setLoading(false); //This stops the loading state
+      setIsModalOpen(true);
     }, 2000);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -245,6 +252,7 @@ function App() {
           amansopinion &copy; 2025 Ozzirap Rideshare. All rights reserved
         </div>
       </footer>
+      <Modal isOpen={isModalOpen} closeModal={closeModal} />
     </div>
   );
 }
