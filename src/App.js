@@ -8,6 +8,7 @@ function App() {
   const [pickupError, setPickupError] = useState("");
   const [destinationError, setDestinationError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -15,10 +16,12 @@ function App() {
     setRideType("single");
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior (page reload)
     setPickupError("");
     setDestinationError("");
+    setSuccessMessage("");
+    setErrorMessage("");
 
     if (!pickup.trim()) {
       setPickupError("Please enter a pickup location.");
@@ -33,14 +36,13 @@ function App() {
     }
 
     setLoading(true); //This starts the loading state
-    setTimeout(() => {
-      console.log("Booking Details:");
-      console.log("Pickup Location:", pickup);
-      console.log("Destination:", destination);
-      console.log(
-        "Ride Type:",
-        rideType === "single" ? "Single Passenger" : "Group Ride"
-      );
+
+    try {
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          Math.random() > 0.2 ? resolve() : reject(new Error("Network Error"));
+        }, 2000);
+      });
 
       // Display the success message
       setSuccessMessage(
@@ -54,9 +56,12 @@ function App() {
       setPickup("");
       setDestination("");
       setRideType("single");
+    } catch (error) {
+      setErrorMessage("Oops! Something went wrong. Please try again.");
+    } finally {
       setLoading(false); //This stops the loading state
       setIsModalOpen(true);
-    }, 2000);
+    }
   };
 
   const closeModal = () => {
@@ -134,6 +139,8 @@ function App() {
                   pickupError ? "border-red-500" : "border-gray-300"
                 }`}
                 aria-label="Pickup Location"
+                aria-invalid={!!pickupError}
+                aria-describedby="pickup-error"
               />
               {pickupError && (
                 <p className="text-red-500 text-sm mt-1">{pickupError}</p>
@@ -164,6 +171,8 @@ function App() {
                   destinationError ? "border-red-500" : "border-gray-300"
                 }`}
                 aria-label="Destination"
+                aria-invalid={!!destinationError}
+                aria-describedby="destination-error"
               />
               {destinationError && (
                 <p className="text-red-500 text-sm mt-1">{destinationError}</p>
@@ -187,19 +196,24 @@ function App() {
                 <option value="group">Group Ride</option>
               </select>
               <p className="text-gray-500 text-sm mt-1">
-                Choose <strong>"Single Passenger"</strong> for a private ride or <strong>"Group Ride"</strong> to
-                share with up to 2 passengers.
+                Choose <strong>"Single Passenger"</strong> for a private ride or{" "}
+                <strong>"Group Ride"</strong> to share with up to 2 passengers.
               </p>
             </div>
 
             <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-700 mb-2"> Ride Summary </h3>
+              <h3 className="text-lg font-bold text-gray-700 mb-2">
+                {" "}
+                Ride Summary{" "}
+              </h3>
               <ul className="text-gray-600">
                 <li>
-                  <strong> Pickup Location:</strong> {pickup || "Not provided yet"}
+                  <strong> Pickup Location:</strong>{" "}
+                  {pickup || "Not provided yet"}
                 </li>
                 <li>
-                  <strong>Destination:</strong> {destination || "Not provided yet"}
+                  <strong>Destination:</strong>{" "}
+                  {destination || "Not provided yet"}
                 </li>
                 <li>
                   <strong>Ride Type:</strong>{" "}
@@ -243,12 +257,31 @@ function App() {
           )}
 
           {successMessage && (
-            <p className="text-green-700 text-center font-medium mt-4" aria-live="assertive">
+            <p
+              className="text-green-700 text-center font-medium mt-4"
+              aria-live="assertive"
+            >
               {successMessage}
             </p>
           )}
         </section>
       </main>
+
+      {isModalOpen && (
+        <Modal onClose={closeModal}>
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-4">
+              {successMessage || errorMessage}
+            </h2>
+            <button
+              onClick={closeModal}
+              className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+            >
+              Close
+            </button>
+          </div>
+        </Modal>
+      )}
 
       <footer className="bg-gray-800 text-white py-4">
         <div className="container mx-auto px-4 text-center text-sm lg:text-base">
