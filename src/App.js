@@ -1,41 +1,58 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Modal from "./Modal";
 
 function App() {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  const [rideType, setRideType] = useState("standard");
+  const [rideType, setRideType] = useState("single");
   const [pickupError, setPickupError] = useState("");
   const [destinationError, setDestinationError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalTitle, setModalTitle] = useState("Booking Successful");
 
-  useEffect(() => {
-    setRideType("single");
-  }, []);
+  const validateInput = (input, fieldName) => {
+    if (!input.trim()) return `${fieldName} is required.`;
+    if (input.trim().length < 3)
+      return `${fieldName} must be at least 3 characters long.`;
+    if (!/^[a-zA-Z\s]+$/.test(input))
+      return `${fieldName} can only contain letters and spaces.`;
+    return "";
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission behavior (page reload)
+
     setPickupError("");
     setDestinationError("");
-    setSuccessMessage("");
-    setErrorMessage("");
 
-    if (!pickup.trim()) {
-      setPickupError("Please enter a pickup location.");
+    //This validates pickup and destination
+    let hasError = false;
+
+    const pickupValidation = validateInput(pickup, "Pickup location");
+    if (pickupValidation) {
+      setPickupError(pickupValidation);
+      hasError = true;
     }
 
-    if (!destination.trim()) {
-      setDestinationError("Please enter a destination.");
+    const destinationValidation = validateInput(
+      destination,
+      "Destination location"
+    );
+    if (destinationValidation) {
+      setDestinationError(destinationValidation);
+      hasError = true;
+    } else if (
+      pickup.trim().toLowerCase() === destination.trim().toLowerCase()
+    ) {
+      setDestinationError("Pickup and Destination cannot be the same.");
+      hasError = true;
     }
 
-    if (!pickup.trim() || !destination.trim()) {
-      return;
-    }
+    if (hasError) return;
 
-    setLoading(true); //This starts the loading state
+    setLoading(true); //This starts the loading instance
 
     try {
       await new Promise((resolve, reject) => {
@@ -44,23 +61,24 @@ function App() {
         }, 2000);
       });
 
-      // Display the success message
-      setSuccessMessage(
-        `Your ride has been booked successfully as a ${
-          rideType === "single" ? "Single Passenger" : "Group Ride"
-        }!`
-      );
+      console.log("Current rideType:", rideType);
 
-      setTimeout(() => setSuccessMessage(""), 3000);
+      const successMessage =
+        rideType === "single"
+          ? "Your ride has been successfully booked as a Single Passenger!"
+          : "Your ride has been successfully booked as a Group Passenger!";
+      setModalTitle("Booking Successful");
+      setModalMessage(successMessage);
 
       setPickup("");
       setDestination("");
       setRideType("single");
     } catch (error) {
-      setErrorMessage("Oops! Something went wrong. Please try again.");
+      setModalTitle("Booking Unsuccessful");
+      setModalMessage("Oops! Something went wrong. Please try again.");
     } finally {
-      setLoading(false); //This stops the loading state
       setIsModalOpen(true);
+      setLoading(false); //This stops the loading state
     }
   };
 
@@ -201,27 +219,6 @@ function App() {
               </p>
             </div>
 
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-gray-700 mb-2">
-                {" "}
-                Ride Summary{" "}
-              </h3>
-              <ul className="text-gray-600">
-                <li>
-                  <strong> Pickup Location:</strong>{" "}
-                  {pickup || "Not provided yet"}
-                </li>
-                <li>
-                  <strong>Destination:</strong>{" "}
-                  {destination || "Not provided yet"}
-                </li>
-                <li>
-                  <strong>Ride Type:</strong>{" "}
-                  {rideType === "single" ? "Single Passenger" : "Group Ride"}
-                </li>
-              </ul>
-            </div>
-
             <button
               type="submit"
               className={`w-full py-2 px-4 rounded ${
@@ -244,35 +241,18 @@ function App() {
               {loading ? "Submitting..." : "Book Ride"}
             </button>
           </form>
-          {pickup.trim() && destination.trim() && (
-            <div className="mt-6 p-4 border rounded bg-gray-50 shadow-sm">
-              <h3 className="text-lg font-bold mb-2">Your Booking Details:</h3>
-              <p>Pickup Location: {pickup}</p>
-              <p>Destination: {destination}</p>
-              <p>
-                Ride Type:{" "}
-                {rideType === "single" ? "Single Passenger" : "Group Ride"}
-              </p>
-            </div>
-          )}
-
-          {successMessage && (
-            <p
-              className="text-green-700 text-center font-medium mt-4"
-              aria-live="assertive"
-            >
-              {successMessage}
-            </p>
-          )}
         </section>
       </main>
 
       {isModalOpen && (
-        <Modal onClose={closeModal}>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          title={modalTitle}
+          message={modalMessage}
+        >
           <div className="text-center">
-            <h2 className="text-xl font-bold mb-4">
-              {successMessage || errorMessage}
-            </h2>
+            <h2 className="text-xl font-bold mb-4">{modalMessage}</h2>
             <button
               onClick={closeModal}
               className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
@@ -288,7 +268,6 @@ function App() {
           amansopinion &copy; 2025 Ozzirap Rideshare. All rights reserved
         </div>
       </footer>
-      <Modal isOpen={isModalOpen} closeModal={closeModal} />
     </div>
   );
 }
